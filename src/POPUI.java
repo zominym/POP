@@ -2,8 +2,7 @@ import java.util.Scanner;
 
 public class POPUI {
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+	public static void start() {
 
 		Scanner keyboard = new Scanner(System.in);
 		int srvPort = 110;
