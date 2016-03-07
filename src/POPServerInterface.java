@@ -1,24 +1,17 @@
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Created by vil on 07/03/16.
  */
 public class POPServerInterface {
-    private String address, userName, userPassword;
     private int port = 110; //995 for secure connection
     private Socket sc;
     private POPState state;
 
-    public POPServerInterface(String address, String userName, String userPassword){
-        this.address = address;
-        this.userName = userName;
-        this.userPassword = userPassword;
-
-    }
-
-    private String getAddress(){
-        return this.address;
+    public POPServerInterface(){
+        
     }
 
     private int getPort(){
@@ -33,13 +26,23 @@ public class POPServerInterface {
         this.state = newState;
     }
 
-    private void initialize(){
+    public boolean initialize(String address){
         try {
-            sc = new Socket(this.getAddress(), this.getPort());
+            sc = new Socket(address, this.getPort());
             this.setState(POPState.INITIALIZATION);
+            byte[] message = new byte[256];
+            sc.getInputStream().read(message);
+            eventHandler(new String(message, StandardCharsets.UTF_8));
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
+    }
+    
+    public boolean connect(String usrName, String usrPass){
+    	//TODO
+    	return true;
     }
 
     private void eventHandler(String event){
