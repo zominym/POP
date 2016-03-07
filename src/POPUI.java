@@ -21,8 +21,8 @@ public class POPUI {
 			srvAddress = keyboard.nextLine();
 	
 			System.out.println("TRYING TO : " + srvAddress);
-			srv = new POPServerInterface(srvAddress);
-		} while (!srv.initialize());
+			srv = new POPServerInterface();
+		} while (!srv.initialize(srvAddress));
 		
 		do
 		{
