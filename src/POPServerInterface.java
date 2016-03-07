@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.net.Socket;
 
 /**
@@ -16,12 +17,40 @@ public class POPServerInterface {
 
     }
 
+    private String getAddress(){
+        return this.address;
+    }
+
+    private int getPort(){
+        return this.port;
+    }
+
+    private POPState getState(){
+        return this.state;
+    }
+
+    private void setState(POPState newState) {
+        this.state = newState;
+    }
+
+    private void initialize(){
+        try {
+            sc = new Socket(this.getAddress(), this.getPort());
+            this.setState(POPState.INITIALIZATION);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void eventHandler(String event){
         if(event == "TEST")
             System.out.println("TEXT");
         else
             System.out.println("ERROR");
     }
+
+
+
 }
 
 enum POPState {
