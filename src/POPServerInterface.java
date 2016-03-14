@@ -78,16 +78,20 @@ public class POPServerInterface {
     			this.setState(POPState.CONNECTED);
     			return CREDENTIALS;
     		case WELCOME_WAIT :
-    			this.nbMails = Integer.parseInt(event.split(" ")[4]);
     			int step = 0;
+    			System.out.println(event.split(" "));
     			for (String m : event.split(" "))
     			{
     				if (step == 0 && m.equals("maildrop"))
     					step ++;
-    				if (step == 1 && m.equals("has"))
+    				else if (step == 1 && m.equals("has"))
     					step ++;
-    				if (step == 2)
+    				else if (step == 2)
+    				{
+    					System.out.println(m);
     					nbMails = Integer.parseInt(m);
+    					step++;
+    				}
     			}
     			System.out.println("MAILDROP HAS " + nbMails + "MESSAGES.");
     			this.setState(POPState.RETR_WAIT);
