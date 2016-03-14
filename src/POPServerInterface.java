@@ -12,6 +12,9 @@ public class POPServerInterface {
     private Socket sc;
     private POPState state;
     private String address;
+    private int nbMails;
+    
+    public static final int CREDENTIALS = 10;
 
     public POPServerInterface(String address){
         this.address = address;
@@ -29,43 +32,62 @@ public class POPServerInterface {
         this.state = newState;
     }
 
-    public boolean initialize(){
+    public int initialize(){
         try {
             sc = new Socket(address, this.getPort());
             this.setState(POPState.INITIALIZATION);
-            byte[] message = new byte[256];
-            sc.getInputStream().read(message);
+            byte[] message = new byte[8000];
+            sc.getInputStream().read(message, 0, 8000);
             return (eventHandler(new String(message, StandardCharsets.UTF_8)));
         } catch (IOException e) {
-            System.out.println("INITIALIZATION FAILED");
-            return false;
+            return -1;
+        }
+    }
+
+    public int loginAPOP(String userName, String userPassword){
+    	String strToSend = "APOP "+userName+" "+userPassword+"\n\r";
+    	byte[] byteToSend = strToSend.getBytes();
+    	try {
+			sc.getOutputStream().write(byteToSend);
+			sc.getOutputStream().flush();
+            byte[] message = new byte[8000];
+            sc.getInputStream().read(message);
+			return (eventHandler(new String(message, StandardCharsets.UTF_8)));
+		} catch (IOException e) {
+			return -1;	
+		}
+    }
+    
+    private int eventHandler(String event){
+    	System.out.println(event);
+        if(event.split(" ")[0].equals("+OK"))
+        	return okHandler(event);
+        else if(event.split(" ")[0].equals("-ERR"))
+        	return errHandler(event);
+        else{
+            return -1;
         }
     }
     
-    public boolean connect(String usrName, String usrPass){
-        try {
-            sc.getInputStream().read();
-        } catch (IOException e) {
-            System.out.println("CONNECTION FAILED");
-            return false;
-        }
-        return true;
+    private int okHandler(String event){
+    	switch(this.getState())
+    	{
+    		case INITIALIZATION :
+    			this.setState(POPState.CONNECTED);
+    			return CREDENTIALS;
+    		case WELCOME_WAIT :
+    			this.setState(POPState.STAT_WAIT);
+    			this.nbMails = Integer.parseInt(event.split(" ")[1]);
+    			return 0;
+		default:
+			break;
+    	}
+    	return -1;
     }
-
-    private boolean eventHandler(String event){
-        System.out.println(event);
-
-        if(event.equals("TEST"))
-            System.out.println("TEST");
-        else if(event.matches("(.*)OK(.*)ready(.*)"))
-            System.out.println("Server ready !");
-        else if(event.matches("(.*)"))
-            System.out.println("ALL I WANT");
-        else{
-            System.out.println("ERROR");
-            return false;
-        }
-        return true;
+    
+    private int errHandler(String event){
+    	
+    	return -1;
     }
 
 
@@ -75,7 +97,7 @@ public class POPServerInterface {
 enum POPState {
     INITIALIZATION,
     CONNECTED,
-    USER_WAIT,
+    STAT_WAIT,
     WELCOME_WAIT,
     RETR_WAIT,
     DELE_WAIT

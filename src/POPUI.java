@@ -14,24 +14,29 @@ public class POPUI {
 		String usrName;
 		String usrPass;
 		
+		boolean error = false;
 		
 		do
 		{
+			if (error) 
+				System.out.println("ERROR, PLEASE TRY AGAIN");
 			System.out.println("PLEASE TYPE SERVER ADDRESS");
 			srvAddress = keyboard.nextLine();
 	
-			System.out.println("TRYING TO : " + srvAddress);
+			System.out.println("TRYING TO CONNECT TO : " + srvAddress);
 			srv = new POPServerInterface(srvAddress);
-		} while (!srv.initialize());
+			error = true;
+		} while (srv.initialize() < 0);
 		
 		do
 		{
-		System.out.println("PLEASE TYPE USER NAME");
-		usrName = keyboard.nextLine();
+			System.out.println("PLEASE TYPE USER NAME");
+			usrName = keyboard.nextLine();
+			
+			System.out.println("PLEASE TYPE USER PASSWORD");
+			usrPass = keyboard.nextLine();
+		} while (srv.loginAPOP(usrName, usrPass) < 0);
 		
-		System.out.println("PLEASE TYPE USER PASSWORD");
-		usrPass = keyboard.nextLine();
-		} while (!srv.connect(usrName, usrPass));
 		
 		
 		
