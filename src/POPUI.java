@@ -42,6 +42,7 @@ public class POPUI {
 			
 			System.out.println("PLEASE TYPE USER PASSWORD");
 			usrPass = keyboard.nextLine();
+			error = true;
 		} while (srv.loginAPOP(usrName, usrPass) < 0);
 		
 		
