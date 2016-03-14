@@ -50,6 +50,8 @@ public class POPServerInterface {
     	try {
 			sc.getOutputStream().write(byteToSend);
 			sc.getOutputStream().flush();
+			
+			this.setState(POPState.WELCOME_WAIT);
             byte[] message = new byte[8000];
             sc.getInputStream().read(message);
 			return (eventHandler(new String(message, StandardCharsets.UTF_8)));
@@ -76,8 +78,19 @@ public class POPServerInterface {
     			this.setState(POPState.CONNECTED);
     			return CREDENTIALS;
     		case WELCOME_WAIT :
-    			this.setState(POPState.STAT_WAIT);
-    			this.nbMails = Integer.parseInt(event.split(" ")[1]);
+    			this.nbMails = Integer.parseInt(event.split(" ")[4]);
+    			int step = 0;
+    			for (String m : event.split(" "))
+    			{
+    				if (step == 0 && m.equals("maildrop"))
+    					step ++;
+    				if (step == 1 && m.equals("has"))
+    					step ++;
+    				if (step == 2)
+    					nbMails = Integer.parseInt(m);
+    			}
+    			System.out.println("MAILDROP HAS " + nbMails + "MESSAGES.");
+    			this.setState(POPState.RETR_WAIT);
     			return 0;
 		default:
 			break;
