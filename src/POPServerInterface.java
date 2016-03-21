@@ -1,7 +1,8 @@
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -59,6 +60,23 @@ public class POPServerInterface {
 			return -1;	
 		}
     }
+
+    public int retr(){
+        String strToSend = "RETR "+(nbMails - 1)+"\n\r";
+        byte[] byteToSend = strToSend.getBytes();
+        try {
+            sc.getOutputStream().write(byteToSend);
+            sc.getOutputStream().flush();
+
+            this.setState(POPState.RETR_WAIT);
+            byte[] message = new byte[8000];
+            sc.getInputStream().read(message);
+            nbMails --;
+            return (eventHandler(new String(message, StandardCharsets.UTF_8)));
+        } catch (IOException e) {
+            return -1;
+        }
+    }
     
     private int eventHandler(String event){
     	System.out.println(event);
@@ -72,32 +90,22 @@ public class POPServerInterface {
     }
     
     private int okHandler(String event){
+        Pattern p = Pattern.compile("(.*)has (.*) m(.*)");
+        Matcher m = p.matcher(event);
     	switch(this.getState())
     	{
     		case INITIALIZATION :
     			this.setState(POPState.CONNECTED);
     			return CREDENTIALS;
     		case WELCOME_WAIT :
-    			int step = 0;
-    			System.out.println(event.split(" "));
-    			for (String m : event.split(" "))
-    			{
-    				if (step == 0 && m.equals("maildrop"))
-    					step ++;
-    				else if (step == 1 && m.equals("has"))
-    					step ++;
-    				else if (step == 2)
-    				{
-    					System.out.println(m);
-    					nbMails = Integer.parseInt(m);
-    					step++;
-    				}
-    			}
+                if(m.find())
+                    nbMails = Integer.parseInt(m.group(3));
     			System.out.println("MAILDROP HAS " + nbMails + "MESSAGES.");
-    			this.setState(POPState.RETR_WAIT);
     			return 0;
-		default:
-			break;
+            case RETR_WAIT:
+                System.out.println(event); return nbMails;
+            default:
+			    break;
     	}
     	return -1;
     }
@@ -114,7 +122,6 @@ public class POPServerInterface {
 enum POPState {
     INITIALIZATION,
     CONNECTED,
-    STAT_WAIT,
     WELCOME_WAIT,
     RETR_WAIT,
     DELE_WAIT

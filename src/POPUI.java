@@ -44,13 +44,14 @@ public class POPUI {
 			usrPass = keyboard.nextLine();
 			error = true;
 		} while (srv.loginAPOP(usrName, usrPass) < 0);
-		
-		
-		
+
 		System.out.println("TRYING TO CONNECT USING :");
 		System.out.println(usrName + '@' + srvAddress + ':' + srvPort + " ***" + usrPass + "***");
-		
-		
+
+		do
+		{
+
+		} while (srv.retr() < 0);
 		
 		
 	}
