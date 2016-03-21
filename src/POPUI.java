@@ -21,41 +21,41 @@ public class POPUI {
 		
 		boolean error = false;
 		
-		do
-		{
-			if (error) 
-				System.out.println("ERROR, PLEASE TRY AGAIN");
-			
-			System.out.println("PLEASE TYPE SERVER ADDRESS");
-			srvAddress = keyboard.nextLine();
-	
-
-			System.out.println("TRYING TO CONNECT TO : " + srvAddress);
-			srv = new POPServerInterface(srvAddress);
-			error = true;
-		} while (srv.initialize() < 0);
-		
-		error = false;
-		do
-		{
-			if (error) 
-				System.out.println("ERROR, PLEASE TRY AGAIN");
-			
-			System.out.println("PLEASE TYPE USER NAME");
-			usrName = keyboard.nextLine();
-			
-			System.out.println("PLEASE TYPE USER PASSWORD");
-			usrPass = keyboard.nextLine();
-			error = true;
-		} while (srv.apop(usrName, usrPass) < 0);
-
-		System.out.println("TRYING TO CONNECT USING :");
-		System.out.println(usrName + '@' + srvAddress + ':' + srvPort + " ***" + usrPass + "***");
-		
-
-        while (srv.retr() > 0){}
-
-		srv.quit();
+//		do
+//		{
+//			if (error) 
+//				System.out.println("ERROR, PLEASE TRY AGAIN");
+//			
+//			System.out.println("PLEASE TYPE SERVER ADDRESS");
+//			srvAddress = keyboard.nextLine();
+//	
+//
+//			System.out.println("TRYING TO CONNECT TO : " + srvAddress);
+//			srv = new POPServerInterface(srvAddress);
+//			error = true;
+//		} while (srv.initialize() < 0);
+//		
+//		error = false;
+//		do
+//		{
+//			if (error) 
+//				System.out.println("ERROR, PLEASE TRY AGAIN");
+//			
+//			System.out.println("PLEASE TYPE USER NAME");
+//			usrName = keyboard.nextLine();
+//			
+//			System.out.println("PLEASE TYPE USER PASSWORD");
+//			usrPass = keyboard.nextLine();
+//			error = true;
+//		} while (srv.apop(usrName, usrPass) < 0);
+//
+//		System.out.println("TRYING TO CONNECT USING :");
+//		System.out.println(usrName + '@' + srvAddress + ':' + srvPort + " ***" + usrPass + "***");
+//		
+//
+//        while (srv.retr() > 0){}
+//
+//		srv.quit();
 		
 		
 		File users = new File("users.txt");
@@ -92,7 +92,6 @@ public class POPUI {
 		
 		
 		File[] mailsLus = mails.listFiles();
-		System.out.println("Found ");
     	int index = 0;
 	    for (int i = 0; i < mailsLus.length; i++) {
 	        if (mailsLus[i].isFile()) {
@@ -111,27 +110,20 @@ public class POPUI {
 	    }
 	    
 	    if (question == 2)
-	    { // A CODER -----------------------------------------------------------------------------
+	    {
 	    	System.out.println("MOVING FILES FROM 'nonlus' TO 'lus'");
 
 	    	for (int i = 0; i < mailsLus.length; i++) {
-	    	   File afile =new File("C:\\folderA\\Afile.txt");
-	    		
-	    	   if(afile.renameTo(new File("C:\\folderB\\" + afile.getName()))){
-	    		System.out.println("File is moved successful!");
-	    	   }else{
-	    		System.out.println("File is failed to move!");
+	    	   
+	    	   if(!mailsLus[i].renameTo(new File(usrName + "/lus/" + mailsLus[i].getName()))){
+	    		System.out.println("Failed to move old mails!");
+	    		error = true;
 	    	   }
-	    	    
 	    	}
-            /*catch(Exception e){
-	    		e.printStackTrace();
-	    	}*/
+	    	if (error == false)
+	    		System.out.println("Successfully moved mails from 'nonlus' to 'lus'.");
 	    }
-
 	    keyboard.close();
-
-		
 	}
 
 }
