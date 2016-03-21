@@ -112,27 +112,20 @@ public class POPUI {
 	    }
 
 	    if (question == 2)
-	    { // A CODER -----------------------------------------------------------------------------
+	    {
 	    	System.out.println("MOVING FILES FROM 'nonlus' TO 'lus'");
 
 	    	for (int i = 0; i < mailsLus.length; i++) {
-	    	   File afile =new File("C:\\folderA\\Afile.txt");
 
-	    	   if(afile.renameTo(new File("C:\\folderB\\" + afile.getName()))){
-	    		System.out.println("File is moved successful!");
-	    	   }else{
-	    		System.out.println("File is failed to move!");
+	    	   if(!mailsLus[i].renameTo(new File(usrName + "/lus/" + mailsLus[i].getName()))){
+	    		System.out.println("Failed to move old mails!");
+	    		error = true;
 	    	   }
-
 	    	}
-            /*catch(Exception e){
-	    		e.printStackTrace();
-	    	}*/
+	    	if (error == false)
+	    		System.out.println("Successfully moved mails from 'nonlus' to 'lus'.");
 	    }
-
 	    keyboard.close();
-
-
 	}
 
 }

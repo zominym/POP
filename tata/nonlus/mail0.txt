@@ -1,6 +1,0 @@
-From : admin
-To : tata
-Obj : mail0
-Body :
-This is the mail 0, if you can read it you are authenticated.
-Bye.
