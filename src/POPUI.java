@@ -1,3 +1,8 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Scanner;
 
 public class POPUI {
@@ -51,6 +56,43 @@ public class POPUI {
 		System.out.println(usrName + '@' + srvAddress + ':' + srvPort + " ***" + usrPass + "***");
 		
 		
+		File users = new File("users.txt");
+		
+		try (BufferedReader br = new BufferedReader(new FileReader(users))) {
+		    String line;
+		    while ((line = br.readLine()) != null) {
+		       String[] oneUser = line.split(" ");
+		       if (oneUser[0].equals(usrName) && oneUser[1].equals(usrPass))
+		       {
+		    	   System.out.println("Connecté sur le compte utilisateur " + usrName + " localement.");
+		    	   break;
+		       }
+		       else
+		       {
+		    	   System.out.println("Erreur, cet utilisateur n'existe pas localement.");
+		    	   return ;
+		       }
+		    }
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
+		File folder = new File("your/path");
+		File[] listOfFiles = folder.listFiles();
+
+		    for (int i = 0; i < listOfFiles.length; i++) {
+		      if (listOfFiles[i].isFile()) {
+		        System.out.println("File " + listOfFiles[i].getName());
+		      } else if (listOfFiles[i].isDirectory()) {
+		        System.out.println("Directory " + listOfFiles[i].getName());
+		      }
+		    }
 		
 		
 	}
