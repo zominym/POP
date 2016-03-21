@@ -7,7 +7,7 @@ public class POPUI {
 		
 		//Gatean : 134.214.118.131
         //Bruno : 10.42.129.211
-
+        //134.214.119.206
 
 		Scanner keyboard = new Scanner(System.in);
 		int srvPort = 110;
