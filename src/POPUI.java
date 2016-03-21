@@ -18,8 +18,8 @@ public class POPUI {
 		System.out.println("WELCOME TO ZGUYL POP3 MAIL SERVICE");
 		POPServerInterface srv;
 		String srvAddress;
-		String usrName;
-		String usrPass;
+		String usrName = "tata";
+		String usrPass = "toto";
 		
 		boolean error = false;
 		
@@ -80,20 +80,23 @@ public class POPUI {
 	    br.close();
 		
 		int question = 0;
-		String nl = "";
 		do
 		{
 			System.out.println("Consulter les messages lus(1) ou non-lus(2) ?");
-			nl = keyboard.nextLine();
-			System.out.println(nl);
-			question = Integer.getInteger(nl);
+			question = Integer.parseInt(keyboard.nextLine());
 		} while ( !(question == 1 || question == 2) );
 		
-		File lus = new File(usrName + "/lus");
-		File[] mailsLus = lus.listFiles();
+		File mails;
+		if (question == 2)
+			mails = new File(usrName + "/nonlus");
+		else
+			mails = new File(usrName + "/lus");
+		
+		
+		File[] mailsLus = mails.listFiles();
 		System.out.println("Found ");
+    	int index = 0;
 	    for (int i = 0; i < mailsLus.length; i++) {
-	    	int index = 0;
 	        if (mailsLus[i].isFile()) {
 	        	System.out.println("Mail "+ index + " :  ---------------------------------------");
 	        	FileInputStream fis = new FileInputStream(mailsLus[i]);
