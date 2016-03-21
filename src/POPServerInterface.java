@@ -1,6 +1,10 @@
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -8,21 +12,22 @@ import java.util.regex.Pattern;
 /**
  * Created by vil on 07/03/16.
  */
-public class POPServerInterface {
-    private int port = 110; //995 for secure connection
+class POPServerInterface {
     private Socket sc;
     private POPState state;
     private String address;
     private int nbMails;
+    private String user;
     
-    public static final int CREDENTIALS = 10;
+    private static final int CREDENTIALS = 10;
 
-    public POPServerInterface(String address){
+    POPServerInterface(String address){
         this.address = address;
     }
 
     private int getPort(){
-        return this.port;
+        return 2048;//110; //995 for secure connection
+
     }
 
     private POPState getState(){
@@ -33,52 +38,83 @@ public class POPServerInterface {
         this.state = newState;
     }
 
-    public int initialize(){
+    private void writeStream(String toSend) throws IOException {
+        toSend += "\n\r";
+        byte[] bytesToSend = toSend.getBytes();
+        sc.getOutputStream().write(bytesToSend);
+        sc.getOutputStream().flush();
+    }
+
+    private String readStream() throws IOException {
+        byte[] receipt = new byte[1024];
+        String result = "";
+        sc.getInputStream().read(receipt);
+        result += new String(receipt, "UTF-8");
+        return result;
+    }
+
+    int initialize(){
         try {
             sc = new Socket(address, this.getPort());
             this.setState(POPState.INITIALIZATION);
-            byte[] message = new byte[8000];
-            sc.getInputStream().read(message, 0, 8000);
-            return (eventHandler(new String(message, StandardCharsets.UTF_8)));
-        } catch (IOException e) {
-            return -1;
-        }
+            return (eventHandler(readStream()));
+        } catch (IOException e) { return -1; }
     }
 
-    public int loginAPOP(String userName, String userPassword){
-    	String strToSend = "APOP "+userName+" "+userPassword+"\n\r";
-    	byte[] byteToSend = strToSend.getBytes();
+    int apop(String userName, String userPassword){
+        this.user = userName;
     	try {
-			sc.getOutputStream().write(byteToSend);
-			sc.getOutputStream().flush();
-			
+            writeStream("APOP "+userName+" "+userPassword);
 			this.setState(POPState.WELCOME_WAIT);
-            byte[] message = new byte[8000];
-            sc.getInputStream().read(message);
-			return (eventHandler(new String(message, StandardCharsets.UTF_8)));
-		} catch (IOException e) {
-			return -1;	
-		}
+			return (eventHandler(readStream()));
+		} catch (IOException e) { return -1; }
     }
 
-    public int retr(){
-        String strToSend = "RETR "+(nbMails - 1)+"\n\r";
-        System.out.println(strToSend);
-        byte[] byteToSend = strToSend.getBytes();
+    public int login(String userName, String userPassword){
+        user(userName);
+        return pass(userPassword);
+    }
+
+    private int user(String userName){
+        this.user = userName;
         try {
-            sc.getOutputStream().write(byteToSend);
-            sc.getOutputStream().flush();
-
-            this.setState(POPState.RETR_WAIT);
-            byte[] message = new byte[8000];
-            sc.getInputStream().read(message);
-            nbMails --;
-            return (eventHandler(new String(message, StandardCharsets.UTF_8)));
-        } catch (IOException e) {
-            return -1;
-        }
+            writeStream("USER "+userName);
+            return (eventHandler(readStream()));
+        } catch (IOException e) { return -1; }
     }
-    
+
+    private int pass(String userPass){
+        try {
+            writeStream("PASS "+userPass);
+            return (eventHandler(readStream()));
+        } catch (IOException e) { return -1; }
+    }
+
+    int retr(){
+        int resultRetr, resultDele;
+        try {
+            writeStream("RETR "+(nbMails));
+            this.setState(POPState.RETR_WAIT);
+            resultRetr = eventHandler(readStream());
+            resultDele = dele();
+            nbMails --;
+            return resultDele*resultRetr;
+        } catch (IOException e) { return -1; }
+    }
+
+    private int dele(){
+        try {
+            writeStream("DELE "+nbMails);
+            this.setState(POPState.DELE_WAIT);
+            return eventHandler(readStream());
+        } catch (IOException e){ return -1; }
+    }
+
+    int quit(){
+        try { writeStream("QUIT"); return 0; }
+        catch (IOException e) { return -1; }
+    }
+
     private int eventHandler(String event){
     	System.out.println(event);
         if(event.split(" ")[0].equals("+OK"))
@@ -104,7 +140,8 @@ public class POPServerInterface {
     			System.out.println("MAILDROP HAS " + nbMails + " MESSAGES.");
     			return 0;
             case RETR_WAIT:
-                System.out.println(event); return nbMails;
+                try { writeMail(event); } catch (IOException e) { return -1; }
+                return nbMails;
             default:
 			    break;
     	}
@@ -112,11 +149,26 @@ public class POPServerInterface {
     }
     
     private int errHandler(String event){
-    	
-    	return -1;
+        System.out.printf(event);
+        return -1;
     }
 
+    private void writeMail(String mail) throws IOException{
+        String date = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+        File directory = new File(user);
+        File mailfile = new File(user+"/nonlus/"+date+".mail");
 
+        if (!directory.exists())
+            directory.mkdir();
+
+        if (!mailfile.exists())
+            mailfile.createNewFile();
+
+        FileWriter fw = new FileWriter(mailfile.getAbsoluteFile());
+        BufferedWriter bw = new BufferedWriter(fw);
+        bw.write(mail);
+        bw.close();
+    }
 
 }
 

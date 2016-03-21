@@ -46,13 +46,15 @@ public class POPUI {
 			System.out.println("PLEASE TYPE USER PASSWORD");
 			usrPass = keyboard.nextLine();
 			error = true;
-		} while (srv.loginAPOP(usrName, usrPass) < 0);
+		} while (srv.apop(usrName, usrPass) < 0);
 
 		System.out.println("TRYING TO CONNECT USING :");
 		System.out.println(usrName + '@' + srvAddress + ':' + srvPort + " ***" + usrPass + "***");
 		
 
         while (srv.retr() > 0){}
+
+		srv.quit();
 		
 		
 		File users = new File("users.txt");
@@ -120,9 +122,10 @@ public class POPUI {
 	    		System.out.println("File is failed to move!");
 	    	   }
 	    	    
-	    	}catch(Exception e){
-	    		e.printStackTrace();
 	    	}
+            /*catch(Exception e){
+	    		e.printStackTrace();
+	    	}*/
 	    }
 
 	    keyboard.close();
