@@ -63,6 +63,7 @@ public class POPServerInterface {
 
     public int retr(){
         String strToSend = "RETR "+(nbMails - 1)+"\n\r";
+        System.out.println(strToSend);
         byte[] byteToSend = strToSend.getBytes();
         try {
             sc.getOutputStream().write(byteToSend);
@@ -100,7 +101,7 @@ public class POPServerInterface {
     		case WELCOME_WAIT :
                 if(m.find())
                     nbMails = Integer.parseInt(m.group(2));
-    			System.out.println("MAILDROP HAS " + nbMails + "MESSAGES.");
+    			System.out.println("MAILDROP HAS " + nbMails + " MESSAGES.");
     			return 0;
             case RETR_WAIT:
                 System.out.println(event); return nbMails;

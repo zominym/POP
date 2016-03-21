@@ -1,15 +1,13 @@
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.Scanner;
 
 public class POPUI {
 
 	public static void start() throws IOException {
 		
-		//134.214.118.131
+		//Gatean : 134.214.118.131
+        //Bruno : 10.42.129.211
+
 
 		Scanner keyboard = new Scanner(System.in);
 		int srvPort = 110;
@@ -54,10 +52,7 @@ public class POPUI {
 		System.out.println(usrName + '@' + srvAddress + ':' + srvPort + " ***" + usrPass + "***");
 		
 
-		do
-		{
-
-		} while (srv.retr() > 0);
+        while (srv.retr() > 0){}
 		
 		
 		File users = new File("users.txt");
@@ -68,7 +63,7 @@ public class POPUI {
 	       String[] oneUser = line.split(" ");
 	       if (oneUser[0].equals(usrName) && oneUser[1].equals(usrPass))
 	       {
-	    	   System.out.println("Connecté sur le compte utilisateur " + usrName + " localement.");
+	    	   System.out.println("Connectï¿½ sur le compte utilisateur " + usrName + " localement.");
 	    	   break;
 	       }
 	       else
@@ -108,9 +103,9 @@ public class POPUI {
 	        	System.out.println("Directory " + mailsLus[i].getName());
 	        }
 	    }
-	    
+
 	    keyboard.close();
-	
+
 		
 	}
 
