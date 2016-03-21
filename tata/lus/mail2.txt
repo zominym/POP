@@ -1,0 +1,6 @@
+From : admin
+To : tata
+Obj : mail2
+Body :
+This is the mail number 2, if you can read it you are authenticated.
+Bye.
