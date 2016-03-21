@@ -106,6 +106,24 @@ public class POPUI {
 	        	System.out.println("Directory " + mailsLus[i].getName());
 	        }
 	    }
+	    
+	    if (question == 2)
+	    { // A CODER -----------------------------------------------------------------------------
+	    	System.out.println("MOVING FILES FROM 'nonlus' TO 'lus'");
+
+	    	for (int i = 0; i < mailsLus.length; i++) {
+	    	   File afile =new File("C:\\folderA\\Afile.txt");
+	    		
+	    	   if(afile.renameTo(new File("C:\\folderB\\" + afile.getName()))){
+	    		System.out.println("File is moved successful!");
+	    	   }else{
+	    		System.out.println("File is failed to move!");
+	    	   }
+	    	    
+	    	}catch(Exception e){
+	    		e.printStackTrace();
+	    	}
+	    }
 
 	    keyboard.close();
 
