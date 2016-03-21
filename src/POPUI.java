@@ -1,7 +1,6 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Scanner;
@@ -81,11 +80,14 @@ public class POPUI {
 	    br.close();
 		
 		int question = 0;
+		String nl = "";
 		do
 		{
 			System.out.println("Consulter les messages lus(1) ou non-lus(2) ?");
-			question = Integer.getInteger(keyboard.nextLine());
-		} while ( ! (question == 1 || question == 2));
+			nl = keyboard.nextLine();
+			System.out.println(nl);
+			question = Integer.getInteger(nl);
+		} while ( !(question == 1 || question == 2) );
 		
 		File lus = new File(usrName + "/lus");
 		File[] mailsLus = lus.listFiles();
@@ -106,6 +108,8 @@ public class POPUI {
 	        	System.out.println("Directory " + mailsLus[i].getName());
 	        }
 	    }
+	    
+	    keyboard.close();
 	
 		
 	}
