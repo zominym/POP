@@ -16,43 +16,72 @@ class POPServerInterface {
     private Socket sc;
     private POPState state;
     private String address;
-    private int nbMails;
+    private int nbMails = 0, nbToDele = 0;
     private String user;
     
     private static final int CREDENTIALS = 10;
 
+    /***
+     * TODO:Write a description
+     * @param address
+     */
     POPServerInterface(String address){
         this.address = address;
     }
 
+    /***
+     * TODO:Write a description
+     * @return
+     */
     private int getPort(){
         return 2048;//110; //995 for secure connection
 
     }
 
+    /***
+     * TODO:Write a description
+     * @return
+     */
     private POPState getState(){
         return this.state;
     }
 
+    /***
+     * TODO:Write a description
+     * @param newState
+     */
     private void setState(POPState newState) {
         this.state = newState;
     }
 
+    /***
+     * TODO:Write a description
+     * @param toSend
+     * @throws IOException
+     */
     private void writeStream(String toSend) throws IOException {
-        toSend += "\n\r";
+        toSend += "\r\n";
         byte[] bytesToSend = toSend.getBytes();
         sc.getOutputStream().write(bytesToSend);
         sc.getOutputStream().flush();
     }
 
+    /***
+     * TODO:Write a description
+     * @return
+     * @throws IOException
+     */
     private String readStream() throws IOException {
         byte[] receipt = new byte[1024];
-        String result = "";
         sc.getInputStream().read(receipt);
-        result += new String(receipt, "UTF-8");
+        String result = new String(receipt, "UTF-8");
         return result;
     }
 
+    /***
+     * TODO:Write a description
+     * @return
+     */
     int initialize(){
         try {
             sc = new Socket(address, this.getPort());
@@ -61,6 +90,12 @@ class POPServerInterface {
         } catch (IOException e) { return -1; }
     }
 
+    /***
+     * TODO:Write a description
+     * @param userName
+     * @param userPassword
+     * @return
+     */
     int apop(String userName, String userPassword){
         this.user = userName;
     	try {
@@ -70,11 +105,22 @@ class POPServerInterface {
 		} catch (IOException e) { return -1; }
     }
 
+    /***
+     * TODO:Write a description
+     * @param userName
+     * @param userPassword
+     * @return
+     */
     public int login(String userName, String userPassword){
         user(userName);
         return pass(userPassword);
     }
 
+    /***
+     * TODO:Write a description
+     * @param userName
+     * @return
+     */
     private int user(String userName){
         this.user = userName;
         try {
@@ -83,6 +129,11 @@ class POPServerInterface {
         } catch (IOException e) { return -1; }
     }
 
+    /***
+     * TODO:Write a description
+     * @param userPass
+     * @return
+     */
     private int pass(String userPass){
         try {
             writeStream("PASS "+userPass);
@@ -90,33 +141,52 @@ class POPServerInterface {
         } catch (IOException e) { return -1; }
     }
 
+    /***
+     * TODO:Write a description
+     * @return
+     */
     int retr(){
-        int resultRetr, resultDele;
+        if(nbMails < 1)
+            return 0;
         try {
-            writeStream("RETR "+(nbMails));
+            writeStream("RETR "+nbMails);
             this.setState(POPState.RETR_WAIT);
-            resultRetr = eventHandler(readStream());
-            resultDele = dele();
-            nbMails --;
-            return resultDele*resultRetr;
+            nbMails --; nbToDele ++;
+            return eventHandler(readStream());
         } catch (IOException e) { return -1; }
     }
 
-    private int dele(){
+    /***
+     * TODO:Write a description
+     * @return
+     */
+    int dele(){
+        if(nbToDele < 1)
+            return 0;
         try {
-            writeStream("DELE "+nbMails);
+            writeStream("DELE "+nbToDele);
             this.setState(POPState.DELE_WAIT);
+            nbToDele --;
             return eventHandler(readStream());
         } catch (IOException e){ return -1; }
     }
 
+    /***
+     * TODO:Write a description
+     * @return
+     */
     int quit(){
         try { writeStream("QUIT"); return 0; }
         catch (IOException e) { return -1; }
     }
 
+
+    /***
+     * TODO:Write a description
+     * @param event
+     * @return
+     */
     private int eventHandler(String event){
-    	System.out.println(event);
         if(event.split(" ")[0].equals("+OK"))
         	return okHandler(event);
         else if(event.split(" ")[0].equals("-ERR"))
@@ -125,7 +195,13 @@ class POPServerInterface {
             return -1;
         }
     }
-    
+
+
+    /***
+     * TODO:Write a description
+     * @param event
+     * @return
+     */
     private int okHandler(String event){
         Pattern p = Pattern.compile("(.*)has (.*) m(.*)");
         Matcher m = p.matcher(event);
@@ -141,7 +217,9 @@ class POPServerInterface {
     			return 0;
             case RETR_WAIT:
                 try { writeMail(event); } catch (IOException e) { return -1; }
-                return nbMails;
+                return 1;
+            case DELE_WAIT:
+                return 1;
             default:
 			    break;
     	}
@@ -149,14 +227,21 @@ class POPServerInterface {
     }
     
     private int errHandler(String event){
-        System.out.printf(event);
+        System.err.printf(event);
         return -1;
     }
 
+
+    /***
+     * TODO:Write a description
+     * @param mail
+     * @throws IOException
+     */
     private void writeMail(String mail) throws IOException{
-        String date = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
-        File directory = new File(user);
-        File mailfile = new File(user+"/nonlus/"+date+".mail");
+
+        String date = new SimpleDateFormat("yyyyMMdd_HHmmssSS").format(Calendar.getInstance().getTime());
+        File directory = new File(user+"/nonlus/");
+        File mailfile = new File(user+"/nonlus/"+date+".mail.txt");
 
         if (!directory.exists())
             directory.mkdir();
