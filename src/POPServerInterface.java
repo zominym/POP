@@ -34,7 +34,7 @@ class POPServerInterface {
      * @return
      */
     private int getPort(){
-        return 2048;//110; //995 for secure connection
+        return 110; //995 for secure connection
 
     }
 
@@ -75,6 +75,7 @@ class POPServerInterface {
         byte[] receipt = new byte[1024];
         sc.getInputStream().read(receipt);
         String result = new String(receipt, "UTF-8");
+    	System.err.println("RECU :"+result);
         return result;
     }
 
@@ -238,20 +239,40 @@ class POPServerInterface {
      * @throws IOException
      */
     private void writeMail(String mail) throws IOException{
+        Pattern p = Pattern.compile("(\\+OK.*\\r\\n)(.*)((\\r\\n).(\\r\\n))", Pattern.DOTALL);
+        Matcher m = p.matcher(mail);
+        
+        int index = mail.indexOf("\r\n");
+        
+        //System.err.println("INDEX");
+        //System.err.println(index);
+        mail = mail.substring(index);
+        //System.err.println("MAIL");
+        //System.err.println(mail);
 
         String date = new SimpleDateFormat("yyyyMMdd_HHmmssSS").format(Calendar.getInstance().getTime());
         File directory = new File(user+"/nonlus/");
+        File directory2 = new File(user+"/lus/");
         File mailfile = new File(user+"/nonlus/"+date+".mail.txt");
 
         if (!directory.exists())
             directory.mkdir();
+        if (!directory2.exists())
+            directory2.mkdir();
 
         if (!mailfile.exists())
             mailfile.createNewFile();
 
         FileWriter fw = new FileWriter(mailfile.getAbsoluteFile());
         BufferedWriter bw = new BufferedWriter(fw);
+        
+//        if (m.find()){
+//        	//for (int i = 0; i < m.groupCount(); i++)
+//        		//System.err.println("GR" + i + " "+m.group(i));
+//        	bw.write(m.group(2));
+//        }
         bw.write(mail);
+        	
         bw.close();
     }
 

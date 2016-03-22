@@ -6,8 +6,9 @@ public class POPUI {
 	public static void start() throws IOException {
 
 		//Gatean : 134.214.118.131
-        //Bruno : 10.42.129.211
-        //134.214.119.206
+        //Bruno : 134.214.119.102
+        //Sydney : 134.214.119.206
+		//Leo : 134.214.119.113
 
 		Scanner keyboard = new Scanner(System.in);
 		int srvPort = 110;
@@ -51,32 +52,17 @@ public class POPUI {
 		System.out.println("TRYING TO CONNECT USING :");
 		System.out.println(usrName + '@' + srvAddress + ':' + srvPort + " ***" + usrPass + "***");
 
+		if (new File(usrName + "/lus/../nonlus").mkdirs())
+			System.out.println("Successfully created local directories for new user.");
 
-        while (srv.retr() > 0){}
+        while (srv.retr() > 0);
 
-		while (srv.dele() > 0){}
+		while (srv.dele() > 0);
 
 		srv.quit();
 
-
-		File users = new File("users.txt");
-
-		BufferedReader br = new BufferedReader(new FileReader(users));
 	    String line;
-	    while ((line = br.readLine()) != null) {
-	       String[] oneUser = line.split(" ");
-	       if (oneUser[0].equals(usrName) && oneUser[1].equals(usrPass))
-	       {
-	    	   System.out.println("Connecté sur le compte utilisateur " + usrName + " localement.");
-	    	   break;
-	       }
-	       else
-	       {
-	    	   System.out.println("Cet utilisateur n'existe pas localement.");
-	    	   return ;
-	       }
-	    }
-	    br.close();
+	    System.out.println("Connecté sur le compte utilisateur " + usrName + " localement.");
 
 		int question = 0;
 		do
