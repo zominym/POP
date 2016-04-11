@@ -34,7 +34,7 @@ class POPServerInterface {
      * @return
      */
     private int getPort(){
-        return 110; //995 for secure connection
+        return 2048; //995 for secure connection
 
     }
 

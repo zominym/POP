@@ -5,7 +5,7 @@ public class POPUI {
 
 	public static void start() throws IOException {
 
-		//Gatean : 134.214.118.131
+		//Gatean : 134.214.117.127
         //Bruno : 134.214.119.102
         //Sydney : 134.214.119.206
 		//Leo : 134.214.119.113
