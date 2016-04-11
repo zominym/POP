@@ -6,8 +6,9 @@ public class POPUI {
 	public static void start() throws IOException {
 
 		//Gatean : 134.214.117.127
+		//Gatean : 134.214.119.107
         //Bruno : 134.214.119.102
-        //Sydney : 134.214.119.206
+        //Sydney : 134.214.119.234
 		//Leo : 134.214.119.113
 
 		Scanner keyboard = new Scanner(System.in);
@@ -31,7 +32,8 @@ public class POPUI {
 			srvAddress = keyboard.nextLine();
 
 			System.out.println("TRYING TO CONNECT TO : " + srvAddress);
-			srv = new POPServerInterface(srvAddress);
+			//srv = new POPServerInterface(srvAddress);
+			srv = new POPServerInterfaceSecure(srvAddress);
 			error = true;
 		} while (srv.initialize() < 0);
 
@@ -47,7 +49,8 @@ public class POPUI {
 			System.out.println("PLEASE TYPE USER PASSWORD");
 			usrPass = keyboard.nextLine();
 			error = true;
-		} while (srv.apop(usrName, usrPass) < 0);
+		} while ((srv.user(usrName) < 0) || (srv.pass(usrPass) < 0));
+
 
 		System.out.println("TRYING TO CONNECT USING :");
 		System.out.println(usrName + '@' + srvAddress + ':' + srvPort + " ***" + usrPass + "***");

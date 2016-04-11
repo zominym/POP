@@ -13,13 +13,13 @@ import java.util.regex.Pattern;
  * Created by vil on 07/03/16.
  */
 class POPServerInterface {
-    private Socket sc;
-    private POPState state;
-    private String address;
-    private int nbMails = 0, nbToDele = 0;
-    private String user;
+    protected Socket sc;
+    protected POPState state;
+    protected String address;
+    protected int nbMails = 0, nbToDele = 0;
+    protected String user;
     
-    private static final int CREDENTIALS = 10;
+    protected static final int CREDENTIALS = 10;
 
     /***
      * TODO:Write a description
@@ -33,8 +33,10 @@ class POPServerInterface {
      * TODO:Write a description
      * @return
      */
+
     private int getPort(){
         return 2048; //995 for secure connection
+
 
     }
 
@@ -42,7 +44,7 @@ class POPServerInterface {
      * TODO:Write a description
      * @return
      */
-    private POPState getState(){
+    protected POPState getState(){
         return this.state;
     }
 
@@ -50,7 +52,7 @@ class POPServerInterface {
      * TODO:Write a description
      * @param newState
      */
-    private void setState(POPState newState) {
+    protected void setState(POPState newState) {
         this.state = newState;
     }
 
@@ -59,7 +61,7 @@ class POPServerInterface {
      * @param toSend
      * @throws IOException
      */
-    private void writeStream(String toSend) throws IOException {
+    protected void writeStream(String toSend) throws IOException {
         toSend += "\r\n";
         byte[] bytesToSend = toSend.getBytes();
         sc.getOutputStream().write(bytesToSend);
@@ -71,7 +73,7 @@ class POPServerInterface {
      * @return
      * @throws IOException
      */
-    private String readStream() throws IOException {
+    protected String readStream() throws IOException {
         byte[] receipt = new byte[1024];
         sc.getInputStream().read(receipt);
         String result = new String(receipt, "UTF-8");
@@ -122,7 +124,8 @@ class POPServerInterface {
      * @param userName
      * @return
      */
-    private int user(String userName){
+    protected int user(String userName){
+        this.setState(POPState.USER_WAIT);
         this.user = userName;
         try {
             writeStream("USER "+userName);
@@ -135,7 +138,7 @@ class POPServerInterface {
      * @param userPass
      * @return
      */
-    private int pass(String userPass){
+    protected int pass(String userPass){
         try {
             writeStream("PASS "+userPass);
             return (eventHandler(readStream()));
@@ -187,7 +190,7 @@ class POPServerInterface {
      * @param event
      * @return
      */
-    private int eventHandler(String event){
+    protected int eventHandler(String event){
         if(event.split(" ")[0].equals("+OK"))
         	return okHandler(event);
         else if(event.split(" ")[0].equals("-ERR"))
@@ -203,7 +206,7 @@ class POPServerInterface {
      * @param event
      * @return
      */
-    private int okHandler(String event){
+    protected int okHandler(String event){
         Pattern p = Pattern.compile("(.*)has (.*) m(.*)");
         Matcher m = p.matcher(event);
     	switch(this.getState())
@@ -211,6 +214,11 @@ class POPServerInterface {
     		case INITIALIZATION :
     			this.setState(POPState.CONNECTED);
     			return CREDENTIALS;
+            case USER_WAIT :
+                this.setState(POPState.PASS_WAIT);
+                return 1;
+            case PASS_WAIT :
+                this.setState(POPState.WELCOME_WAIT);
     		case WELCOME_WAIT :
                 if(m.find())
                     nbMails = Integer.parseInt(m.group(2));
@@ -227,7 +235,7 @@ class POPServerInterface {
     	return -1;
     }
     
-    private int errHandler(String event){
+    protected int errHandler(String event){
         System.err.printf(event);
         return -1;
     }
@@ -238,7 +246,7 @@ class POPServerInterface {
      * @param mail
      * @throws IOException
      */
-    private void writeMail(String mail) throws IOException{
+    protected void writeMail(String mail) throws IOException{
         Pattern p = Pattern.compile("(\\+OK.*\\r\\n)(.*)((\\r\\n).(\\r\\n))", Pattern.DOTALL);
         Matcher m = p.matcher(mail);
         
@@ -281,6 +289,8 @@ class POPServerInterface {
 enum POPState {
     INITIALIZATION,
     CONNECTED,
+    PASS_WAIT,
+    USER_WAIT,
     WELCOME_WAIT,
     RETR_WAIT,
     DELE_WAIT
