@@ -66,8 +66,8 @@ public class POPGUI extends JDialog {
 
         boolean error = false;
 
-        do
-        {
+        /*do
+        {*/
             if (error)
                 output.setText(output.getText() + "\n" + "ERROR, PLEASE TRY AGAIN");
 
@@ -79,11 +79,12 @@ public class POPGUI extends JDialog {
             //srv = new POPServerInterface(srvAddress);
             srv = new POPServerInterfaceSecure(srvAddress);
             error = true;
-        } while (srv.initialize() < 0);
+        //} while (srv.initialize() < 0);
+        srv.initialize();
 
         error = false;
-        do
-        {
+        /*do
+        {*/
             if (error)
                 System.out.println("ERROR, PLEASE TRY AGAIN");
 
@@ -96,7 +97,9 @@ public class POPGUI extends JDialog {
             usrPass = userPass.getText();
 
             error = true;
-        } while ((srv.user(usrName) < 0) || (srv.pass(usrPass) < 0));
+        //} while ((srv.user(usrName) < 0) || (srv.pass(usrPass) < 0));
+        srv.user(usrName);
+        srv.pass(usrPass);
 
 
         output.setText(output.getText() + "\n" + "TRYING TO CONNECT USING :");
@@ -105,9 +108,9 @@ public class POPGUI extends JDialog {
         if (new File(usrName + "/lus/../nonlus").mkdirs())
             output.setText(output.getText() + "\n" + "Successfully created local directories for new user.");
 
-        while (srv.retr() > 0);
+        /*while (srv.retr() > 0);
 
-        while (srv.dele() > 0);
+        while (srv.dele() > 0);*/
 
         srv.quit();
 
