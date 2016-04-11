@@ -7,8 +7,9 @@ public class POP {
 		// TODO Auto-generated method stub
 
 		POPGUI dialog = new POPGUI();
-		dialog.output.setText("<html>WELCOME TO ZGUYL POP3 MAIL SERVICE <br><br><br><br><br> PLEASE ENTER YOUR CREDENTIALS AND PRESS CONNECT");
+		dialog.output.setText("<html>Bienvenue sur le serveur mail ZGUYL <br><br> Veuillez entrer vos identifiants de connexion");
 		dialog.pack();
+		dialog.setSize(800,600);
 		dialog.setVisible(true);
 		System.exit(0);
 	}

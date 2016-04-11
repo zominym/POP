@@ -39,6 +39,7 @@ public class POPGUI extends JDialog {
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 // TODO what to do when cross is clicked ???
+                System.exit(0);
             }
         });
 
@@ -55,13 +56,13 @@ public class POPGUI extends JDialog {
         });
     }
 
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
         POPGUI dialog = new POPGUI();
-        dialog.output.setText("<html>WELCOME TO ZGUYL POP3 MAIL SERVICE <br><br><br><br><br> PLEASE ENTER YOUR CREDENTIALS AND PRESS CONNECT");
+        dialog.output.setText("<html>Bienvenue sur le serveur mail ZGUYL <br><br> Veuillez entrer vos identifiants de connexion");
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);
-    }
+    }*/
 
     public void readOldMails() {
         usrName = userName.getText();
@@ -109,12 +110,12 @@ public class POPGUI extends JDialog {
         int index = 0;
         if (mailsLus == null)
         {
-            output.setText(output.getText() + "<br>" + "ERROR, PLEASE LOG IN BEFORE TRYING TO ACCESS MAILS");
+            output.setText(output.getText() + "<br>" + "Erreur, veuillez entrer un nom d'utilisateur avant de consulter vos mails.");
             return -1;
         }
         if (mailsLus.length <= 0)
         {
-            output.setText(output.getText() + "<br>" + "No Mails to display");
+            output.setText(output.getText() + "<br>" + "Aucun mails à afficher.");
             return -1;
         }
         for (int i = 0; i < mailsLus.length; i++) {
@@ -126,10 +127,10 @@ public class POPGUI extends JDialog {
                 fis.close();
                 String str = (new String(data, "UTF-8")).replace("\n","<br>");
                 output.setText(output.getText() + "<br>" + str);
-                output.setText(output.getText() + "<br>" + "End of mail "+ index + " :  ---------------------------------------");
+                output.setText(output.getText() + "<br>" + "FIN DU MAIL "+ index + " :  ---------------------------------------");
                 index ++;
             } else if (mailsLus[i].isDirectory()) {
-                output.setText(output.getText() + "<br>" + "Directory " + mailsLus[i].getName());
+                output.setText(output.getText() + "<br>" + "REPERTOIRE " + mailsLus[i].getName());
             }
         }
         return 0;
@@ -148,14 +149,14 @@ public class POPGUI extends JDialog {
 
         //output.setText(output.getText() + "\n" + "WELCOME TO ZGUYL POP3 MAIL SERVICE");
         POPServerInterface srv;
-        String srvAddress;
+        String srvAddress = "";
 
         boolean error = false;
 
         do
         {
             if (error) {
-                //output.setText(output.getText() + "<br>" + "ERROR, PLEASE TRY AGAIN");
+                output.setText("Impossible de se connecter au serveur "+srvAddress);
                 return;
             }
 
@@ -173,7 +174,7 @@ public class POPGUI extends JDialog {
         do
         {
             if (error) {
-                //output.setText(output.getText() + "ERROR, PLEASE TRY AGAIN");
+                output.setText("Nom d'utilisateur ou mot de passe incorrect");
                 return;
             }
 
