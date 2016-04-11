@@ -33,8 +33,10 @@ class POPServerInterface {
      * TODO:Write a description
      * @return
      */
-    protected int getPort(){
-        return 110; //995 for secure connection
+
+    private int getPort(){
+        return 2048; //995 for secure connection
+
 
     }
 

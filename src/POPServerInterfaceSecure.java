@@ -45,7 +45,6 @@ public class POPServerInterfaceSecure extends POPServerInterface {
         }
     }
 
-    @Override
     protected int getPort() {
         return 2048;
     }
