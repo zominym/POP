@@ -47,7 +47,7 @@ public class POPServerInterfaceSecure extends POPServerInterface {
 
     @Override
     protected int getPort() {
-        return 110;
+        return 2048;
     }
 
     protected void writeStream(String toSend) throws IOException {
