@@ -15,6 +15,11 @@ public class POPGUI extends JDialog {
     private JButton connectButton;
     private JButton readOldsButton;
     private JButton readNewsButton;
+    private JButton sendButton;
+    private JTextArea mailSender;
+    private JTextField textField1;
+    private JTextField textField2;
+    private JTextField textField3;
 
     private String usrName = "";
     private String usrPass = "";
