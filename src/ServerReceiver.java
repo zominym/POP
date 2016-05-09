@@ -5,12 +5,16 @@ import java.util.*;
  */
 public class ServerReceiver {
     public String address;
-    public int port = 25;
+    public int port;
     public List<String> receivers;
 
     public ServerReceiver(String address, int port, List<String> receivers){
         this.address = address;
         this.port = port;
         this.receivers = receivers;
+    }
+
+    public ServerReceiver (String address, List<String> receivers){
+        this(address, 25, receivers);
     }
 }
