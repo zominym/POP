@@ -1,8 +1,7 @@
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.*;
+import java.util.regex.*;
 
 /**
  * Created by vil on 02/05/16.
@@ -10,11 +9,13 @@ import java.util.regex.Pattern;
 public class SMTPServerInterface {
 
     private Socket sc;
-    private ServerReceiver servers[];
+    private List<ServerReceiver> servers;
     private String user;
-    private String content;
+    private List<String> content;
     private int indexServer;
     private SMTPState state;
+    private boolean needToCommunicate = true;
+    private boolean isConnected;
     private Matcher m;
     private Pattern serverReady = Pattern.compile("220 (.*) ready"),
             greeting = Pattern.compile("250 (.*) greet (.*)"),
@@ -23,18 +24,17 @@ public class SMTPServerInterface {
             startMailInput = Pattern.compile("354 (.*)"),
             closeMessage = Pattern.compile("221 (.*)");
 
-
-    public SMTPServerInterface(ServerReceiver servers[], String user, String content){
+    public SMTPServerInterface(List<ServerReceiver> servers, String user, List<String> content){
         this.state = SMTPState.INIT;
         this.servers = servers;
         this.user = user;
         this.content = content;
-        this.indexServer = servers.length;
+        this.indexServer = servers.size() - 1;
         try {
-            this.send(servers[indexServer-1]);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            while(needToCommunicate){
+                    this.send(servers.get(indexServer));
+            }
+        } catch (IOException e) { e.printStackTrace(); }
     }
 
     protected void writeStream(String toSend) throws IOException {
@@ -54,8 +54,12 @@ public class SMTPServerInterface {
 
     public void send(ServerReceiver srv) throws IOException {
         sc = new Socket(srv.address, srv.port);
+        isConnected = true;
         this.state = SMTPState.WAIT_CONNECTION;
-        messageHandler(readStream());
+        while(isConnected){
+            messageHandler(readStream());
+        }
+
     }
 
     public void messageHandler(String msg){
@@ -63,7 +67,7 @@ public class SMTPServerInterface {
         m = serverReady.matcher(msg);
         if(m.matches() && state == SMTPState.WAIT_CONNECTION){
             try {
-                writeStream("HELO "+ InetAddress.getLocalHost());
+                writeStream("HELO pop-server.net");
                 state = SMTPState.WAIT_GREETINGS;
             }
             catch (IOException e) { e.printStackTrace(); }
@@ -72,28 +76,76 @@ public class SMTPServerInterface {
 
         m = greeting.matcher(msg);
         if(m.matches() && state == SMTPState.WAIT_GREETINGS){
-
+            try {
+                writeStream("MAIL FROM:<"+user+">");
+                state = SMTPState.WAIT_SENDER_CONFIRMATION;
+            } catch (IOException e) { e.printStackTrace(); }
+            return;
         }
 
         m = ok.matcher(msg);
         if(m.matches()){
-            if(state == SMTPState.WAIT_SENDER_CONFIRMATION){}
-            if(state == SMTPState.WAIT_RECIPIENT_CONFIRMATION){}
-            if(state == SMTPState.WAIT_END_CONFIRMAITON){}
+            if(state == SMTPState.WAIT_SENDER_CONFIRMATION){
+                try{
+                    writeStream("RCPT TO:<"+servers.get(indexServer).receivers.remove(servers.get(indexServer).receivers.size()-1)+">");
+                    state = SMTPState.WAIT_RECIPIENT_CONFIRMATION;
+                    return;
+                } catch (IOException e) { e.printStackTrace();}
+            }
+            if(state == SMTPState.WAIT_RECIPIENT_CONFIRMATION){
+                try {
+                    if(servers.get(indexServer).receivers.isEmpty()){
+                        writeStream("DATA");
+                    }
+                    else {
+                        writeStream("RCPT TO:<"+servers.get(indexServer).receivers.remove(servers.get(indexServer).receivers.size()-1)+">");
+                    }
+                } catch (IOException e) { e.printStackTrace(); }
+                return;
+            }
+            if(state == SMTPState.WAIT_END_CONFIRMAITON){
+                try {
+                    writeStream("QUIT");
+                } catch (IOException e) { e.printStackTrace(); }
+                return;
+            }
         }
 
         m = unknowUserName.matcher(msg);
         if(m.matches() && state == SMTPState.WAIT_RECIPIENT_CONFIRMATION){
+            System.err.println("UTILISATEUR INCONNU");
+            try {
+                if(servers.get(indexServer).receivers.isEmpty()){
+                    writeStream("DATA");
+                }
+                else {
+                    writeStream("RCPT TO:<"+servers.get(indexServer).receivers.remove(servers.get(indexServer).receivers.size()-1)+">");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         m = startMailInput.matcher(msg);
         if(m.matches() && state == SMTPState.WAIT_STARTDATA_SIGNAL){
-
+            try {
+                while ( !content.isEmpty() ){
+                        writeStream(content.remove(0));
+                }
+            } catch (IOException e) { e.printStackTrace(); }
         }
 
         m = closeMessage.matcher(msg);
         if(m.matches() && state == SMTPState.END){
-
+            try {
+                sc.close();
+            } catch (IOException e) { e.printStackTrace(); }
+            indexServer --;
+            isConnected = false;
+            if(indexServer < 0){
+                needToCommunicate = false;
+            }
+            return;
         }
 
     }
