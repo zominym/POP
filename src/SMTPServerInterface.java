@@ -163,6 +163,7 @@ class SMTPServerInterface {
             if(state == SMTPState.WAIT_END_CONFIRMAITON){
                 try {
                     writeStream("QUIT");
+                    state = SMTPState.END;
                 }
                 catch (SocketTimeoutException e) {
                     System.err.println("Le serveur n'a pas répondu à temps");
@@ -236,7 +237,9 @@ class SMTPServerInterface {
         m = closeMessage.matcher(msg);
         if(m.matches() && state == SMTPState.END){
             try {
+                System.err.println("La connexion au serveur s'est terminée correctement.");
                 sc.close();
+                isConnected = false;
             }
             catch (SocketTimeoutException e) {
                 System.err.println("Le serveur n'a pas répondu à temps");
@@ -253,10 +256,20 @@ class SMTPServerInterface {
             return;
         }
 
+        if(state == SMTPState.END){
+            System.err.println("La connexion au serveur ne s'est pas terminée correctement. Le serveur n'a pas répondu.");
+            try {
+                sc.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            isConnected = false;
+            return;
+        }
+
         try {
-            System.err.println("La connexion au serveur s'est terminée.");
             writeStream("QUIT");
-            sc.close();
+            state = SMTPState.END;
         }
         catch (SocketTimeoutException e) {
             System.err.println("Le serveur n'a pas répondu à temps");
@@ -267,9 +280,7 @@ class SMTPServerInterface {
         catch (IOException e) {
             e.printStackTrace();
         }
-        isConnected = false;
         needToCommunicate = false;
-
 
     }
 
