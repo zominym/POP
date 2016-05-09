@@ -23,7 +23,6 @@ public class POPGUI extends JDialog {
     private JButton sendButton;
     private JTextField sender;
     private JTextField receivers;
-    private JTextField textField3;
     private JTextArea mailSender;
     private JPanel JPanel_LEFT;
 
@@ -232,7 +231,10 @@ public class POPGUI extends JDialog {
         boolean loop = true;
         if (s.contains("\n")) {
             do {
-                lines.add(s.substring(0, s.indexOf("\n")));
+                String temp = s.substring(0, s.indexOf("\n") + 1);
+                lines.add(temp);
+                s = s.replace(temp, "");
+//                System.err.print("FOUND " + temp + " IN " + s);
             } while (s.contains("\n"));
         }
         else {

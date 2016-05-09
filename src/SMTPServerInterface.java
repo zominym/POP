@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -41,12 +42,14 @@ class SMTPServerInterface {
             try{ this.send(servers.get(indexServer)); }
             catch (UnknownHostException e) {
                 System.err.println("Serveur injoignable");
+                JOptionPane.showMessageDialog(null, "Serveur injoignable");
                 indexServer--;
                 if(indexServer < 0)
                     needToCommunicate = false;
             }
             catch (SocketTimeoutException e) {
                 System.err.println("Le serveur n'a pas répondu à temps");
+                JOptionPane.showMessageDialog(null, "Le serveur n'a pas répondu à temps");
                 indexServer--;
                 if(indexServer < 0)
                     needToCommunicate = false;
@@ -97,6 +100,7 @@ class SMTPServerInterface {
             }
             catch (SocketTimeoutException e) {
                 System.err.println("Le serveur n'a pas répondu à temps");
+                JOptionPane.showMessageDialog(null, "Le serveur n'a pas répondu à temps");
                 indexServer--;
                 if(indexServer < 0)
                     needToCommunicate = false;
@@ -113,6 +117,7 @@ class SMTPServerInterface {
             }
             catch (SocketTimeoutException e) {
                 System.err.println("Le serveur n'a pas répondu à temps");
+                JOptionPane.showMessageDialog(null, "Le serveur n'a pas répondu à temps");
                 indexServer--;
                 if(indexServer < 0)
                     needToCommunicate = false;
@@ -134,6 +139,7 @@ class SMTPServerInterface {
                 }
                 catch (SocketTimeoutException e) {
                     System.err.println("Le serveur n'a pas répondu à temps");
+                    JOptionPane.showMessageDialog(null, "Le serveur n'a pas répondu à temps");
                     indexServer--;
                     if(indexServer < 0)
                         needToCommunicate = false;
@@ -153,6 +159,7 @@ class SMTPServerInterface {
                 }
                 catch (SocketTimeoutException e) {
                     System.err.println("Le serveur n'a pas répondu à temps");
+                    JOptionPane.showMessageDialog(null, "Le serveur n'a pas répondu à temps");
                     indexServer--;
                     if(indexServer < 0)
                         needToCommunicate = false;
@@ -167,6 +174,7 @@ class SMTPServerInterface {
                 }
                 catch (SocketTimeoutException e) {
                     System.err.println("Le serveur n'a pas répondu à temps");
+                    JOptionPane.showMessageDialog(null, "Le serveur n'a pas répondu à temps");
                     indexServer--;
                     if(indexServer < 0)
                         needToCommunicate = false;
@@ -179,6 +187,7 @@ class SMTPServerInterface {
         m = unknowUserName.matcher(msg);
         if(m.matches() && state == SMTPState.WAIT_RECIPIENT_CONFIRMATION){
             System.err.println("Utilisateur inconnu");
+            JOptionPane.showMessageDialog(null, "Utilisateur inconnu");
             try {
                 if(servers.get(indexServer).receivers.isEmpty()){
                     if(noUserFound){
@@ -188,6 +197,7 @@ class SMTPServerInterface {
                         }
                         catch (SocketTimeoutException e) {
                             System.err.println("Le serveur n'a pas répondu à temps");
+                            JOptionPane.showMessageDialog(null, "Le serveur n'a pas répondu à temps");
                             indexServer--;
                             if(indexServer < 0)
                                 needToCommunicate = false;
@@ -208,6 +218,7 @@ class SMTPServerInterface {
             }
             catch (SocketTimeoutException e) {
                 System.err.println("Le serveur n'a pas répondu à temps");
+                JOptionPane.showMessageDialog(null, "Le serveur n'a pas répondu à temps");
                 indexServer--;
                 if(indexServer < 0)
                     needToCommunicate = false;
@@ -227,6 +238,7 @@ class SMTPServerInterface {
             }
             catch (SocketTimeoutException e) {
                 System.err.println("Le serveur n'a pas répondu à temps");
+                JOptionPane.showMessageDialog(null, "Le serveur n'a pas répondu à temps");
                 indexServer--;
                 if(indexServer < 0)
                     needToCommunicate = false;
@@ -238,11 +250,13 @@ class SMTPServerInterface {
         if(m.matches() && state == SMTPState.END){
             try {
                 System.err.println("La connexion au serveur s'est terminée correctement.");
+                JOptionPane.showMessageDialog(null, "La connexion au serveur s'est terminée correctement");
                 sc.close();
                 isConnected = false;
             }
             catch (SocketTimeoutException e) {
                 System.err.println("Le serveur n'a pas répondu à temps");
+                JOptionPane.showMessageDialog(null, "Le serveur n'a pas répondu à temps");
                 indexServer--;
                 if(indexServer < 0)
                     needToCommunicate = false;
@@ -258,6 +272,7 @@ class SMTPServerInterface {
 
         if(state == SMTPState.END){
             System.err.println("La connexion au serveur ne s'est pas terminée correctement. Le serveur n'a pas répondu.");
+            JOptionPane.showMessageDialog(null, "La connexion au serveur ne s'est pas terminée correctement. Le serveur n'a pas répondu.");
             try {
                 sc.close();
             } catch (IOException e) {
@@ -272,7 +287,8 @@ class SMTPServerInterface {
             state = SMTPState.END;
         }
         catch (SocketTimeoutException e) {
-            System.err.println("Le serveur n'a pas répondu à temps");
+            System.err.println("Le serveur n'a pas répondu à temps.");
+            JOptionPane.showMessageDialog(null, "Le serveur n'a pas répondu à temps.");
             indexServer--;
             if(indexServer < 0)
                 needToCommunicate = false;
