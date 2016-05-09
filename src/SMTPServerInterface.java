@@ -23,6 +23,7 @@ public class SMTPServerInterface {
             unknowUserName = Pattern.compile("550 (.*)"),
             startMailInput = Pattern.compile("354 (.*)"),
             closeMessage = Pattern.compile("221 (.*)");
+    private boolean noUserFound = true;
 
     public SMTPServerInterface(List<ServerReceiver> servers, String user, List<String> content){
         this.state = SMTPState.INIT;
@@ -55,6 +56,7 @@ public class SMTPServerInterface {
     public void send(ServerReceiver srv) throws IOException {
         sc = new Socket(srv.address, srv.port);
         isConnected = true;
+        noUserFound = true;
         this.state = SMTPState.WAIT_CONNECTION;
         while(isConnected){
             messageHandler(readStream());
@@ -86,13 +88,15 @@ public class SMTPServerInterface {
         m = ok.matcher(msg);
         if(m.matches()){
             if(state == SMTPState.WAIT_SENDER_CONFIRMATION){
+                noUserFound = false;
                 try{
                     writeStream("RCPT TO:<"+servers.get(indexServer).receivers.remove(servers.get(indexServer).receivers.size()-1)+">");
                     state = SMTPState.WAIT_RECIPIENT_CONFIRMATION;
-                    return;
                 } catch (IOException e) { e.printStackTrace();}
+                return;
             }
             if(state == SMTPState.WAIT_RECIPIENT_CONFIRMATION){
+                noUserFound = false;
                 try {
                     if(servers.get(indexServer).receivers.isEmpty()){
                         writeStream("DATA");
@@ -116,6 +120,17 @@ public class SMTPServerInterface {
             System.err.println("UTILISATEUR INCONNU");
             try {
                 if(servers.get(indexServer).receivers.isEmpty()){
+                    if(noUserFound){
+                        try {
+                            sc.close();
+                        } catch (IOException e) { e.printStackTrace(); }
+                        indexServer --;
+                        isConnected = false;
+                        if(indexServer < 0){
+                            needToCommunicate = false;
+                        }
+                        return;
+                    }
                     writeStream("DATA");
                 }
                 else {
@@ -124,6 +139,7 @@ public class SMTPServerInterface {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            return;
         }
 
         m = startMailInput.matcher(msg);
