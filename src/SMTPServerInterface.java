@@ -33,7 +33,8 @@ public class SMTPServerInterface {
         this.indexServer = servers.size() - 1;
         try {
             while(needToCommunicate){
-                    this.send(servers.get(indexServer));
+                System.err.println("Try to communicate");
+                this.send(servers.get(indexServer));
             }
         } catch (IOException e) { e.printStackTrace(); }
     }
