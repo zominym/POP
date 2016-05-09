@@ -1,14 +1,18 @@
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.*;
-import java.util.regex.*;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by vil on 02/05/16.
  * 10.42.0.56:2049
+ * 77.134.169.38:2049
  */
-public class SMTPServerInterface {
+class SMTPServerInterface {
 
     private Socket sc;
     private List<ServerReceiver> servers;
@@ -27,21 +31,32 @@ public class SMTPServerInterface {
             closeMessage = Pattern.compile("221 (.*)");
     private boolean noUserFound = true;
 
-    public SMTPServerInterface(List<ServerReceiver> servers, String user, List<String> content){
+    SMTPServerInterface(List<ServerReceiver> servers, String user, List<String> content){
         this.state = SMTPState.INIT;
         this.servers = servers;
         this.user = user;
         this.content = content;
         this.indexServer = servers.size() - 1;
-        try {
-            while(needToCommunicate){
-                System.err.println("Try to communicate");
-                this.send(servers.get(indexServer));
+        while(needToCommunicate){
+            try{ this.send(servers.get(indexServer)); }
+            catch (UnknownHostException e) {
+                System.err.println("Serveur injoignable");
+                indexServer--;
+                if(indexServer < 0)
+                    needToCommunicate = false;
             }
-        } catch (IOException e) { e.printStackTrace(); }
+            catch (SocketTimeoutException e) {
+                System.err.println("Le serveur n'a pas répondu à temps");
+                indexServer--;
+                if(indexServer < 0)
+                    needToCommunicate = false;
+            }
+            catch (IOException e) { e.printStackTrace(); }
+        }
+
     }
 
-    protected void writeStream(String toSend) throws IOException {
+    private void writeStream(String toSend) throws IOException {
         System.err.println("SENDING :"+toSend);
         toSend += "\r\n";
         byte[] bytesToSend = toSend.getBytes();
@@ -49,7 +64,7 @@ public class SMTPServerInterface {
         sc.getOutputStream().flush();
     }
 
-    protected String readStream() throws IOException {
+    private String readStream() throws IOException {
         byte[] receipt = new byte[1024];
         sc.getInputStream().read(receipt);
         String result = new String(receipt, "UTF-8");
@@ -58,7 +73,7 @@ public class SMTPServerInterface {
     }
 
 
-    public void send(ServerReceiver srv) throws IOException {
+    private void send(ServerReceiver srv) throws IOException {
         sc = new Socket();
         sc.connect(new InetSocketAddress(srv.address, srv.port), 1000);
         sc.setSoTimeout(1000);
@@ -71,7 +86,7 @@ public class SMTPServerInterface {
 
     }
 
-    public void messageHandler(String msg){
+    private void messageHandler(String msg){
         msg = msg.replaceAll("(\\r|\\n)", "");
 
         m = serverReady.matcher(msg);
@@ -79,6 +94,12 @@ public class SMTPServerInterface {
             try {
                 writeStream("HELO "+user.split("@")[1]);
                 state = SMTPState.WAIT_GREETINGS;
+            }
+            catch (SocketTimeoutException e) {
+                System.err.println("Le serveur n'a pas répondu à temps");
+                indexServer--;
+                if(indexServer < 0)
+                    needToCommunicate = false;
             }
             catch (IOException e) { e.printStackTrace(); }
             return;
@@ -89,7 +110,14 @@ public class SMTPServerInterface {
             try {
                 writeStream("MAIL FROM:<"+user+">");
                 state = SMTPState.WAIT_SENDER_CONFIRMATION;
-            } catch (IOException e) { e.printStackTrace(); }
+            }
+            catch (SocketTimeoutException e) {
+                System.err.println("Le serveur n'a pas répondu à temps");
+                indexServer--;
+                if(indexServer < 0)
+                    needToCommunicate = false;
+            }
+            catch (IOException e) { e.printStackTrace(); }
             return;
         }
 
@@ -103,7 +131,14 @@ public class SMTPServerInterface {
                     String receiver = srv.receivers.remove(i);
                     writeStream("RCPT TO:<"+receiver+adrs);
                     state = SMTPState.WAIT_RECIPIENT_CONFIRMATION;
-                } catch (IOException e) { e.printStackTrace();}
+                }
+                catch (SocketTimeoutException e) {
+                    System.err.println("Le serveur n'a pas répondu à temps");
+                    indexServer--;
+                    if(indexServer < 0)
+                        needToCommunicate = false;
+                }
+                catch (IOException e) { e.printStackTrace();}
                 return;
             }
             if(state == SMTPState.WAIT_RECIPIENT_CONFIRMATION){
@@ -115,26 +150,48 @@ public class SMTPServerInterface {
                     else {
                         writeStream("RCPT TO:<"+servers.get(indexServer).receivers.remove(servers.get(indexServer).receivers.size()-1)+"@"+servers.get(indexServer).address+">");
                     }
-                } catch (IOException e) { e.printStackTrace(); }
+                }
+                catch (SocketTimeoutException e) {
+                    System.err.println("Le serveur n'a pas répondu à temps");
+                    indexServer--;
+                    if(indexServer < 0)
+                        needToCommunicate = false;
+                }
+                catch (IOException e) { e.printStackTrace(); }
                 return;
             }
             if(state == SMTPState.WAIT_END_CONFIRMAITON){
                 try {
                     writeStream("QUIT");
-                } catch (IOException e) { e.printStackTrace(); }
+                }
+                catch (SocketTimeoutException e) {
+                    System.err.println("Le serveur n'a pas répondu à temps");
+                    indexServer--;
+                    if(indexServer < 0)
+                        needToCommunicate = false;
+                }
+                catch (IOException e) { e.printStackTrace(); }
                 return;
             }
         }
 
         m = unknowUserName.matcher(msg);
         if(m.matches() && state == SMTPState.WAIT_RECIPIENT_CONFIRMATION){
-            System.err.println("UTILISATEUR INCONNU");
+            System.err.println("Utilisateur inconnu");
             try {
                 if(servers.get(indexServer).receivers.isEmpty()){
                     if(noUserFound){
                         try {
-                            sc.close();
-                        } catch (IOException e) { e.printStackTrace(); }
+                            writeStream("QUIT");
+                            state = SMTPState.END;
+                        }
+                        catch (SocketTimeoutException e) {
+                            System.err.println("Le serveur n'a pas répondu à temps");
+                            indexServer--;
+                            if(indexServer < 0)
+                                needToCommunicate = false;
+                        }
+                        catch (IOException e) { e.printStackTrace(); }
                         indexServer --;
                         isConnected = false;
                         if(indexServer < 0){
@@ -147,7 +204,14 @@ public class SMTPServerInterface {
                 else {
                     writeStream("RCPT TO:<"+servers.get(indexServer).receivers.remove(servers.get(indexServer).receivers.size()-1)+"@"+servers.get(indexServer).address+">");
                 }
-            } catch (IOException e) {
+            }
+            catch (SocketTimeoutException e) {
+                System.err.println("Le serveur n'a pas répondu à temps");
+                indexServer--;
+                if(indexServer < 0)
+                    needToCommunicate = false;
+            }
+            catch (IOException e) {
                 e.printStackTrace();
             }
             return;
@@ -159,14 +223,28 @@ public class SMTPServerInterface {
                 while ( !content.isEmpty() ){
                         writeStream(content.remove(0));
                 }
-            } catch (IOException e) { e.printStackTrace(); }
+            }
+            catch (SocketTimeoutException e) {
+                System.err.println("Le serveur n'a pas répondu à temps");
+                indexServer--;
+                if(indexServer < 0)
+                    needToCommunicate = false;
+            }
+            catch (IOException e) { e.printStackTrace(); }
         }
 
         m = closeMessage.matcher(msg);
         if(m.matches() && state == SMTPState.END){
             try {
                 sc.close();
-            } catch (IOException e) { e.printStackTrace(); }
+            }
+            catch (SocketTimeoutException e) {
+                System.err.println("Le serveur n'a pas répondu à temps");
+                indexServer--;
+                if(indexServer < 0)
+                    needToCommunicate = false;
+            }
+            catch (IOException e) { e.printStackTrace(); }
             indexServer --;
             isConnected = false;
             if(indexServer < 0){
@@ -176,9 +254,17 @@ public class SMTPServerInterface {
         }
 
         try {
-            writeStream("ERROR");
+            System.err.println("La connexion au serveur s'est terminée.");
+            writeStream("QUIT");
             sc.close();
-        } catch (IOException e) {
+        }
+        catch (SocketTimeoutException e) {
+            System.err.println("Le serveur n'a pas répondu à temps");
+            indexServer--;
+            if(indexServer < 0)
+                needToCommunicate = false;
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
         isConnected = false;
