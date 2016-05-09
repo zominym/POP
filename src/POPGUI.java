@@ -11,15 +11,16 @@ public class POPGUI extends JDialog {
     private JTextField userName;
     private JTextField servAddress;
     private JTextField userPass;
-    public JLabel output;
+    public JTextArea output;
     private JButton connectButton;
     private JButton readOldsButton;
     private JButton readNewsButton;
     private JButton sendButton;
-    private JTextArea mailSender;
-    private JTextField textField1;
-    private JTextField textField2;
+    private JTextField tataZguylComTextField;
+    private JTextField totoZguylComTextField;
     private JTextField textField3;
+    private JTextArea mailSender;
+    private JPanel JPanel_LEFT;
 
     private String usrName = "";
     private String usrPass = "";
@@ -63,7 +64,7 @@ public class POPGUI extends JDialog {
 
     /*public static void main(String[] args) {
         POPGUI dialog = new POPGUI();
-        dialog.output.setText("<html>Bienvenue sur le serveur mail ZGUYL <br><br> Veuillez entrer vos identifiants de connexion");
+        dialog.output.setText("<html>Bienvenue sur le serveur mail ZGUYL \n\n Veuillez entrer vos identifiants de connexion");
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);
@@ -115,27 +116,27 @@ public class POPGUI extends JDialog {
         int index = 0;
         if (mailsLus == null)
         {
-            output.setText(output.getText() + "<br>" + "Erreur, veuillez entrer un nom d'utilisateur avant de consulter vos mails.");
+            output.setText(output.getText() + "\n" + "Erreur, veuillez entrer un nom d'utilisateur avant de consulter vos mails.");
             return -1;
         }
         if (mailsLus.length <= 0)
         {
-            output.setText(output.getText() + "<br>" + "Aucun mails à afficher.");
+            output.setText(output.getText() + "\n" + "Aucun mails à afficher.");
             return -1;
         }
         for (int i = 0; i < mailsLus.length; i++) {
             if (mailsLus[i].isFile()) {
-                output.setText(output.getText() + "<br>" + "Mail "+ index + " :  ---------------------------------------");
+                output.setText(output.getText() + "\n" + "Mail "+ index + " :  ---------------------------------------");
                 FileInputStream fis = new FileInputStream(mailsLus[i]);
                 byte[] data = new byte[(int) mailsLus[i].length()];
                 fis.read(data);
                 fis.close();
-                String str = (new String(data, "UTF-8")).replace("\n","<br>");
-                output.setText(output.getText() + "<br>" + str);
-                output.setText(output.getText() + "<br>" + "FIN DU MAIL "+ index + " :  ---------------------------------------");
+                String str = (new String(data, "UTF-8")).replace("\n","\n");
+                output.setText(output.getText() + "\n" + str);
+                output.setText(output.getText() + "\n" + "FIN DU MAIL "+ index + " :  ---------------------------------------");
                 index ++;
             } else if (mailsLus[i].isDirectory()) {
-                output.setText(output.getText() + "<br>" + "REPERTOIRE " + mailsLus[i].getName());
+                output.setText(output.getText() + "\n" + "REPERTOIRE " + mailsLus[i].getName());
             }
         }
         return 0;
@@ -165,11 +166,11 @@ public class POPGUI extends JDialog {
                 return;
             }
 
-            //output.setText(output.getText() + "<br>" + "PLEASE TYPE SERVER ADDRESS");
+            //output.setText(output.getText() + "\n" + "PLEASE TYPE SERVER ADDRESS");
             //srvAddress = keyboard.nextLine();
             srvAddress = servAddress.getText();
 
-            //output.setText(output.getText() + "<br>" + "TRYING TO CONNECT TO : " + srvAddress);
+            //output.setText(output.getText() + "\n" + "TRYING TO CONNECT TO : " + srvAddress);
             //srv = new POPServerInterface(srvAddress);
             srv = new POPServerInterfaceSecure(srvAddress);
             error = true;
