@@ -260,7 +260,7 @@ public class POPGUI extends JDialog {
             }
             if (temp == null) {
                 List<String> list = new ArrayList<>();
-                servers.add(new ServerReceiver(address, Integer.parseInt(port), Arrays.asList(name));
+                servers.add(new ServerReceiver(address, Integer.parseInt(port), Arrays.asList(name)));
             }
             else {
                 temp.receivers.add(name);
