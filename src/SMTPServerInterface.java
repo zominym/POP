@@ -152,6 +152,7 @@ class SMTPServerInterface {
                 try {
                     if(servers.get(indexServer).receivers.isEmpty()){
                         writeStream("DATA");
+                        state = SMTPState.WAIT_STARTDATA_SIGNAL;
                     }
                     else {
                         writeStream("RCPT TO:<"+servers.get(indexServer).receivers.remove(servers.get(indexServer).receivers.size()-1)+"@"+servers.get(indexServer).address+">");
@@ -169,6 +170,7 @@ class SMTPServerInterface {
             }
             if(state == SMTPState.WAIT_END_CONFIRMAITON){
                 try {
+                    JOptionPane.showMessageDialog(null, "Message envoyé !");
                     writeStream("QUIT");
                     state = SMTPState.END;
                 }
@@ -211,6 +213,7 @@ class SMTPServerInterface {
                         return;
                     }
                     writeStream("DATA");
+                    state = SMTPState.WAIT_STARTDATA_SIGNAL;
                 }
                 else {
                     writeStream("RCPT TO:<"+servers.get(indexServer).receivers.remove(servers.get(indexServer).receivers.size()-1)+"@"+servers.get(indexServer).address+">");
@@ -233,8 +236,11 @@ class SMTPServerInterface {
         if(m.matches() && state == SMTPState.WAIT_STARTDATA_SIGNAL){
             try {
                 while ( !content.isEmpty() ){
-                        writeStream(content.remove(0));
+                    writeStream(content.remove(0).toString());
                 }
+                //TODO: Decommenter
+                //writeStream("\r\n.\r\n");
+                state = SMTPState.WAIT_END_CONFIRMAITON;
             }
             catch (SocketTimeoutException e) {
                 System.err.println("Le serveur n'a pas répondu à temps");
