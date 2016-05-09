@@ -39,6 +39,7 @@ public class SMTPServerInterface {
     }
 
     protected void writeStream(String toSend) throws IOException {
+        System.err.println("SENDING :"+toSend);
         toSend += "\r\n";
         byte[] bytesToSend = toSend.getBytes();
         sc.getOutputStream().write(bytesToSend);
@@ -49,6 +50,7 @@ public class SMTPServerInterface {
         byte[] receipt = new byte[1024];
         sc.getInputStream().read(receipt);
         String result = new String(receipt, "UTF-8");
+        System.err.println("READING :"+result);
         return result;
     }
 
@@ -69,7 +71,7 @@ public class SMTPServerInterface {
         m = serverReady.matcher(msg);
         if(m.matches() && state == SMTPState.WAIT_CONNECTION){
             try {
-                writeStream("HELO pop-server.net");
+                writeStream("HELO "+user.split("@")[1]);
                 state = SMTPState.WAIT_GREETINGS;
             }
             catch (IOException e) { e.printStackTrace(); }
@@ -90,7 +92,7 @@ public class SMTPServerInterface {
             if(state == SMTPState.WAIT_SENDER_CONFIRMATION){
                 noUserFound = false;
                 try{
-                    writeStream("RCPT TO:<"+servers.get(indexServer).receivers.remove(servers.get(indexServer).receivers.size()-1)+">");
+                    writeStream("RCPT TO:<"+servers.get(indexServer).receivers.remove(servers.get(indexServer).receivers.size()-1)+"@"+servers.get(indexServer).address+">");
                     state = SMTPState.WAIT_RECIPIENT_CONFIRMATION;
                 } catch (IOException e) { e.printStackTrace();}
                 return;
@@ -102,7 +104,7 @@ public class SMTPServerInterface {
                         writeStream("DATA");
                     }
                     else {
-                        writeStream("RCPT TO:<"+servers.get(indexServer).receivers.remove(servers.get(indexServer).receivers.size()-1)+">");
+                        writeStream("RCPT TO:<"+servers.get(indexServer).receivers.remove(servers.get(indexServer).receivers.size()-1)+"@"+servers.get(indexServer).address+">");
                     }
                 } catch (IOException e) { e.printStackTrace(); }
                 return;
@@ -134,7 +136,7 @@ public class SMTPServerInterface {
                     writeStream("DATA");
                 }
                 else {
-                    writeStream("RCPT TO:<"+servers.get(indexServer).receivers.remove(servers.get(indexServer).receivers.size()-1)+">");
+                    writeStream("RCPT TO:<"+servers.get(indexServer).receivers.remove(servers.get(indexServer).receivers.size()-1)+"@"+servers.get(indexServer).address+">");
                 }
             } catch (IOException e) {
                 e.printStackTrace();
