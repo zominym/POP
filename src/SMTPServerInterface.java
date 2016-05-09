@@ -6,6 +6,7 @@ import java.util.regex.*;
 
 /**
  * Created by vil on 02/05/16.
+ * 10.42.0.56:2049
  */
 public class SMTPServerInterface {
 
@@ -18,9 +19,9 @@ public class SMTPServerInterface {
     private boolean needToCommunicate = true;
     private boolean isConnected;
     private Matcher m;
-    private Pattern serverReady = Pattern.compile("220(.*)ready"),
-            greeting = Pattern.compile("250 (.*) greet (.*)"),
-            ok = Pattern.compile("250 OK"),
+    private Pattern serverReady = Pattern.compile("220 (.*)"),
+            greeting = Pattern.compile("250 (.*)"),
+            ok = Pattern.compile("250 OK(.*)"),
             unknowUserName = Pattern.compile("550 (.*)"),
             startMailInput = Pattern.compile("354 (.*)"),
             closeMessage = Pattern.compile("221 (.*)");
@@ -60,6 +61,7 @@ public class SMTPServerInterface {
     public void send(ServerReceiver srv) throws IOException {
         sc = new Socket();
         sc.connect(new InetSocketAddress(srv.address, srv.port), 1000);
+        sc.setSoTimeout(1000);
         isConnected = true;
         noUserFound = true;
         this.state = SMTPState.WAIT_CONNECTION;
@@ -70,6 +72,7 @@ public class SMTPServerInterface {
     }
 
     public void messageHandler(String msg){
+        msg = msg.replaceAll("(\\r|\\n)", "");
 
         m = serverReady.matcher(msg);
         if(m.matches() && state == SMTPState.WAIT_CONNECTION){
@@ -93,9 +96,12 @@ public class SMTPServerInterface {
         m = ok.matcher(msg);
         if(m.matches()){
             if(state == SMTPState.WAIT_SENDER_CONFIRMATION){
-                noUserFound = false;
                 try{
-                    writeStream("RCPT TO:<"+servers.get(indexServer).receivers.remove(servers.get(indexServer).receivers.size()-1)+"@"+servers.get(indexServer).address+">");
+                    ServerReceiver srv = servers.get(indexServer);
+                    String adrs = "@"+srv.address+">";
+                    int i = srv.receivers.size()-1;
+                    String receiver = srv.receivers.remove(i);
+                    writeStream("RCPT TO:<"+receiver+adrs);
                     state = SMTPState.WAIT_RECIPIENT_CONFIRMATION;
                 } catch (IOException e) { e.printStackTrace();}
                 return;

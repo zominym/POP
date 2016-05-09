@@ -1,10 +1,14 @@
 import javax.swing.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 public class POPGUI extends JDialog {
@@ -238,7 +242,7 @@ public class POPGUI extends JDialog {
     }
 
     private List<ServerReceiver> getServers(String s) {
-        List<String> l = Arrays.asList(s.split(" "));
+        List<String> l = new LinkedList<>(Arrays.asList(s.split(" ")));
         List<ServerReceiver> servers = new ArrayList<ServerReceiver>();
         for (String str : l) {
             String name = str.split("@")[0];
@@ -258,7 +262,7 @@ public class POPGUI extends JDialog {
             }
             if (temp == null) {
                 List<String> list = new ArrayList<>();
-                servers.add(new ServerReceiver(address, Integer.parseInt(port), Arrays.asList(name)));
+                servers.add(new ServerReceiver(address, Integer.parseInt(port), new LinkedList(Arrays.asList(name))));
             }
             else {
                 temp.receivers.add(name);
