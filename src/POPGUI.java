@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class POPGUI extends JDialog {
@@ -16,8 +19,8 @@ public class POPGUI extends JDialog {
     private JButton readOldsButton;
     private JButton readNewsButton;
     private JButton sendButton;
-    private JTextField tataZguylComTextField;
-    private JTextField totoZguylComTextField;
+    private JTextField receivers;
+    private JTextField sender;
     private JTextField textField3;
     private JTextArea mailSender;
     private JPanel JPanel_LEFT;
@@ -58,6 +61,12 @@ public class POPGUI extends JDialog {
         readNewsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 readNewMails();
+            }
+        });
+
+        sendButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                sendMail();
             }
         });
     }
@@ -210,5 +219,53 @@ public class POPGUI extends JDialog {
 
         String line;
         //output.setText(output.getText() + "\n" + "Connecté sur le compte utilisateur " + usrName + " localement.");
+    }
+
+    private void sendMail() {
+        SMTPServerInterface smtp = new SMTPServerInterface(getServers(receivers.getText()), sender.getText(), toLines(mailSender.getText()));
+    }
+
+    private List<String> toLines(String s) {
+        List<String> lines = new ArrayList<String>();
+        boolean loop = true;
+        if (s.contains("\n")) {
+            do {
+                lines.add(s.substring(0, s.indexOf("\n")));
+            } while (s.contains("\n"));
+        }
+        else {
+            lines.add(s);
+        }
+        return lines;
+    }
+
+    private List<ServerReceiver> getServers(String s) {
+        List<String> l = Arrays.asList(s.split(" "));
+        List<ServerReceiver> servers = new ArrayList<ServerReceiver>();
+        for (String str : l) {
+            String name = str.split("@")[0];
+            String address;
+            String port = "25";
+            if (str.contains(":")) {
+                address = str.split("@")[1].split(":")[0];
+                port = str.split("@")[1].split(":")[1];
+            }
+            else {
+                address = str.split("@")[1];
+            }
+            ServerReceiver temp = null;
+            for (ServerReceiver sr : servers) {
+                if (sr.address.equals(address))
+                    temp = sr;
+            }
+            if (temp == null) {
+                List<String> list = new ArrayList<>();
+                servers.add(new ServerReceiver(address, Integer.parseInt(port), Arrays.asList(name));
+            }
+            else {
+                temp.receivers.add(name);
+            }
+        }
+        return servers;
     }
 }
