@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.*;
 import java.util.regex.*;
@@ -17,7 +18,7 @@ public class SMTPServerInterface {
     private boolean needToCommunicate = true;
     private boolean isConnected;
     private Matcher m;
-    private Pattern serverReady = Pattern.compile("220 (.*) ready"),
+    private Pattern serverReady = Pattern.compile("220(.*)ready"),
             greeting = Pattern.compile("250 (.*) greet (.*)"),
             ok = Pattern.compile("250 OK"),
             unknowUserName = Pattern.compile("550 (.*)"),
@@ -57,7 +58,8 @@ public class SMTPServerInterface {
 
 
     public void send(ServerReceiver srv) throws IOException {
-        sc = new Socket(srv.address, srv.port);
+        sc = new Socket();
+        sc.connect(new InetSocketAddress(srv.address, srv.port), 1000);
         isConnected = true;
         noUserFound = true;
         this.state = SMTPState.WAIT_CONNECTION;
@@ -166,6 +168,16 @@ public class SMTPServerInterface {
             }
             return;
         }
+
+        try {
+            writeStream("ERROR");
+            sc.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        isConnected = false;
+        needToCommunicate = false;
+
 
     }
 

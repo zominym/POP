@@ -2,12 +2,10 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 
 public class POPGUI extends JDialog {
     private JPanel contentPane;
@@ -19,8 +17,8 @@ public class POPGUI extends JDialog {
     private JButton readOldsButton;
     private JButton readNewsButton;
     private JButton sendButton;
-    private JTextField receivers;
     private JTextField sender;
+    private JTextField receivers;
     private JTextField textField3;
     private JTextArea mailSender;
     private JPanel JPanel_LEFT;

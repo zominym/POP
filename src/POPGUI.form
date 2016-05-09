@@ -147,7 +147,7 @@
               <text value="Adresse Serveur"/>
             </properties>
           </component>
-          <component id="6ab9d" class="javax.swing.JTextField" binding="receivers" default-binding="true">
+          <component id="6ab9d" class="javax.swing.JTextField" binding="sender" default-binding="true">
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
@@ -161,12 +161,12 @@
             </constraints>
             <properties/>
           </component>
-          <component id="6c241" class="javax.swing.JTextField" binding="sender" default-binding="true">
+          <component id="6c241" class="javax.swing.JTextField" binding="receivers" default-binding="true">
             <constraints>
               <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="toto@zguyl.com"/>
+              <text value="toto@134.214.119.110:2049"/>
             </properties>
           </component>
           <scrollpane id="aac1a">
